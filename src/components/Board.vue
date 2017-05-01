@@ -8,17 +8,15 @@
                     NEW GAME
             </div>
         </div>
-        <transition-group>
-            <template v-for="(row,indexRow) in gridBoard">
-                <Block
-                    v-for="(box,indexBox) in row"
-                    v-if="!(box.index == 8 )"
-                    :dataBlock="box"
-                    key="indexBox"
-                    @click.native="setPosition(indexBox, indexRow)">
-                </Block>
-            </template>
-        </transition-group>
+        <template v-for="(row,indexRow) in gridBoard">
+            <Block
+                v-for="(box,indexBox) in row"
+                v-if="!(box.index == 8 )"
+                :dataBlock="box"
+                key="indexBox"
+                @click.native="setPosition(indexBox, indexRow)">
+            </Block>
+        </template>
     </div>
 </template>
 
@@ -156,6 +154,7 @@
     		Block
     	},
         methods: {
+
             /*
             *   isFinish: check if the game is over
             */
@@ -180,7 +179,7 @@
             },
 
             /*
-            *   invertPosition: switcha la posizione del box vuoto con il box cliccato e aggiorna l'indice del box vuoto
+            *   invertPosition: switch empty box with clicked box index and background position
             */
             invertPosition (indexBox, indexRow) {
 
@@ -196,18 +195,16 @@
                 clickedBox.bgPosition = emptyBox.bgPosition
                 emptyBox.bgPosition = bgPositionSwitched
 
-
-
                 //check if the game is finished
                 this.isFinish()
 
-                // update indexEmptyBlock
+                // update indexEmptyBlock and gridBoard to render
                 this.indexEmptyBlock = _.extend({}, { row: indexRow, box: indexBox })
                 this.gridBoard = _.extend ({}, virtualBoard)
             },
 
             /*
-            *   isUp, isDown, isRight, isLeft sono delle funzioni che verificano se il box vuoto è limitrofo al box cliccato
+            *   isUp, isDown, isRight, isLeft: check if empty box is close to clicked box
             */
             isUp (indexBox, indexRow) {
                 if (indexBox == this.indexEmptyBlock.box && indexRow - 1 == this.indexEmptyBlock.row) {
@@ -239,8 +236,8 @@
             },
 
             /*
-            *   setPosition: identifica la posizione del box cliccato e in base alla posizione
-            *   chiama le funzioni di verifica del box vuoto
+            *   setPosition: identify clicked box position and trought above functions check if empy box is close to clicked box
+            *   @param indexBox and IndexRow: numbers or strings which define clicked box position
             */
             setPosition(indexBox, indexRow) {
 
@@ -388,13 +385,12 @@
                     })
                 })
             },
+
             /*
-            *   reset:
+            *  newGame: reset the board for a new match
             */
             newGame () {
                 this.finish = false
-                this.mixBoard ()
-                this.indexEmptyBlock = _.extend({}, { row: 2, box: 2 })
             }
         },
         created () {

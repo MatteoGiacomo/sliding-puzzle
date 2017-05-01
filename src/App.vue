@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper">
+    <div>
         <Board></Board>
     </div>
 </template>
@@ -19,13 +19,10 @@
 
     body {
         background-color: #282828;
-    }
-    .wrapper {
-        width: 100%;
         display: flex;
-        justify-content: center;
         align-items: center;
         flex-direction: column;
+        padding-top: 100px;
     }
 
 </style>
