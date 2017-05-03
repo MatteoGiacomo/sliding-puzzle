@@ -146,7 +146,7 @@
                     row: 2,
                     box: 2
                 },
-                gridBoard: [],
+                gridBoard: BOARD,
                 gameOver: false
             }
         },
@@ -421,12 +421,9 @@
         },
         created () {
             // initBoard doesn't work properly yet
-            this.initBoard ()
-            console.log('CREATED')
-            console.log(this.gridBoard)
-            if (this.gridBoard !== [] ) {
-                this.mixBoard ()
-            }
+            // this.initBoard ()
+            
+            this.mixBoard ()
         },
         updated () {
             // if (this.gameOver) {
