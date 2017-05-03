@@ -1,6 +1,6 @@
 <template>
     <div :class="$style.container">
-        <div :class="[$style.overlay, this.finish ? $style.active : '' ]">
+        <div :class="[$style.overlay, this.gameOver ? $style.active : '' ]">
             <span :class="$style.game">FINISH</span>
             <div
                 :class="$style.btn_reset"
@@ -81,7 +81,7 @@
         }]
     ]
 
-    const RANDOM_NUMBERS = [
+    const CARDS = [
         {
             index: 0,
             bgPosition: {
@@ -146,8 +146,8 @@
                     row: 2,
                     box: 2
                 },
-                gridBoard: BOARD,
-                finish: false
+                gridBoard: [],
+                gameOver: false
             }
         },
     	components: {
@@ -173,13 +173,13 @@
                 })
 
                 if (counter === numbersLength) {
-                    this.finish = true
+                    this.gameOver = true
                 }
                 return
             },
 
             /*
-            *   invertPosition: switch empty box with clicked box index and background position
+            *   invertPosition: switch index and background position of the empty box with clicked box
             */
             invertPosition (indexBox, indexRow) {
 
@@ -236,7 +236,7 @@
             },
 
             /*
-            *   setPosition: identify clicked box position and trought above functions check if empy box is close to clicked box
+            *   setPosition: identify the position of clicked box and checks if empty box is close to clicked box
             *   @param indexBox and IndexRow: numbers or strings which define clicked box position
             */
             setPosition(indexBox, indexRow) {
@@ -359,11 +359,11 @@
             },
 
             /*
-            *   mixBoard: initialized the matrix board with random numbers and images
+            *   mixBoard: initialized the board with random indexs and images
             */
             mixBoard () {
-                let numbers = RANDOM_NUMBERS
-                let currentIndex = numbers.length -1
+                let cards = CARDS
+                let currentIndex = cards.length -1
                 let randomIndex
                 let temporaryValue
 
@@ -372,14 +372,14 @@
                     randomIndex = Math.floor(Math.random() * currentIndex)
                     currentIndex -= 1
 
-                    temporaryValue = numbers[currentIndex]
-                    numbers[currentIndex] = numbers[randomIndex]
-                    numbers[randomIndex] = temporaryValue
+                    temporaryValue = cards[currentIndex]
+                    cards[currentIndex] = cards[randomIndex]
+                    cards[randomIndex] = temporaryValue
                 }
 
-                // populate the Board with random numbers
+                // populate the Board with random cards
                 _.each(this.gridBoard, (row) => {
-                    let randomNumbersRow = numbers.splice (0, row.length)
+                    let randomNumbersRow = cards.splice (0, row.length)
                     _.each(row, (box, index) => {
                         _.extend (box, randomNumbersRow[index])
                     })
@@ -390,11 +390,49 @@
             *  newGame: reset the board for a new match
             */
             newGame () {
-                this.finish = false
+                this.gameOver = false
+            },
+
+            /*
+            *   initBoard: generate the board with numb column and numb row. It permits to choose the numbers of cards.
+            *   @param {Number} numb: number of columns and rows
+            */
+            initBoard (numb) {
+                let boxSize = 500 / numb
+                let heightBox = 0
+                let widthBox = 0
+                let temporaryBoard = []
+
+                _.times (numb, (n) => {
+                    _.times (numb, (n) => {
+                        temporaryBoard.push({
+                            boxPosition: {
+                                top: heightBox + 'px',
+                                left: widthBox + 'px'
+                            }
+                        })
+                        widthBox = widthBox + boxSize
+                    })
+                    heightBox = heightBox + boxSize
+                    widthBox = 0
+                })
+                this.gridBoard = temporaryBoard
             }
         },
         created () {
-            this.mixBoard ()
+            // initBoard doesn't work properly yet
+            this.initBoard ()
+            console.log('CREATED')
+            console.log(this.gridBoard)
+            if (this.gridBoard !== [] ) {
+                this.mixBoard ()
+            }
+        },
+        updated () {
+            // if (this.gameOver) {
+            //     this.initBoard ()
+            //     this.mixBoard ()
+            // }
         }
     }
 </script>
