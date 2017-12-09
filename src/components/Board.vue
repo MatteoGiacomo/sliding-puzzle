@@ -146,7 +146,7 @@
                     row: 2,
                     box: 2
                 },
-                gridBoard: [],
+                gridBoard: BOARD,
                 gameOver: false
             }
         },
@@ -163,14 +163,14 @@
                 let numbersLength = numbers.length
                 let counter = 0
 
-                _.each (this.gridBoard, (row) => {
-                    let numbersRow = numbers.splice (0, row.length)
-                    _.each (row, (box, index) => {
-                        if (numbersRow[index] === box.index) {
+                for (let row in this.gridBoard) {
+                    let numbersRow = numbers.splice (0, this.gridBoard[row].length)
+                    for (let box in this.gridBoard[row]) {
+                        if (numbersRow[box] === this.gridBoard[row][box].index){
                             counter ++
                         }
-                    })
-                })
+                    }
+                }
 
                 if (counter === numbersLength) {
                     this.gameOver = true
@@ -199,8 +199,8 @@
                 this.isFinish()
 
                 // update indexEmptyBlock and gridBoard to render
-                this.indexEmptyBlock = _.extend({}, { row: indexRow, box: indexBox })
-                this.gridBoard = _.extend ({}, virtualBoard)
+                this.indexEmptyBlock = { ...{ row: indexRow, box: indexBox } }
+                this.gridBoard = { ...virtualBoard }
             },
 
             /*
@@ -378,12 +378,13 @@
                 }
 
                 // populate the Board with random cards
-                _.each(this.gridBoard, (row) => {
-                    let randomNumbersRow = cards.splice (0, row.length)
-                    _.each(row, (box, index) => {
-                        _.extend (box, randomNumbersRow[index])
-                    })
-                })
+                for (let row in this.gridBoard) {
+                    let randomNumbersRow = cards.splice(0, this.gridBoard[row].length)
+                    for (let box in this.gridBoard[row]) {
+                        Object.assign(this.gridBoard[row][box], randomNumbersRow[box])
+                    }
+                }
+
             },
 
             /*
@@ -413,6 +414,7 @@
                         })
                         widthBox = widthBox + boxSize
                     })
+
                     heightBox = heightBox + boxSize
                     widthBox = 0
                 })
@@ -421,18 +423,13 @@
         },
         created () {
             // initBoard doesn't work properly yet
-            this.initBoard ()
-            console.log('CREATED')
-            console.log(this.gridBoard)
-            if (this.gridBoard !== [] ) {
-                this.mixBoard ()
-            }
-        },
-        updated () {
-            // if (this.gameOver) {
-            //     this.initBoard ()
+            // this.initBoard ()
+            // console.log('CREATED')
+            // console.log(this.gridBoard)
+            // if (this.gridBoard !== [] ) {
             //     this.mixBoard ()
             // }
+            this.mixBoard ()
         }
     }
 </script>

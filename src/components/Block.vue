@@ -1,14 +1,12 @@
 <template>
     <div
-        :style="setClasses()"
+        :style="setClasses"
         :class="$style.box">
         <span :class="$style.indexBox">0</span>{{ dataBlock.index }}
     </div>
 </template>
 
 <script>
-
-    import _ from 'lodash'
 
     export default {
         name: 'Block',
@@ -18,9 +16,9 @@
                 required: true
             }
         },
-        methods: {
+        computed: {
             setClasses () {
-                return  _.extend (this.dataBlock.boxPosition, this.dataBlock.bgPosition)
+                return  {...this.dataBlock.boxPosition, ...this.dataBlock.bgPosition}
             }
         }
     }
