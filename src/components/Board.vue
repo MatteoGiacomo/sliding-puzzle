@@ -1,5 +1,5 @@
 <template>
-    <div :class="$style.container">
+    <div :class="$style.container" :style="boardSizes">
         <div :class="[$style.overlay, this.gameOver ? $style.active : '' ]">
             <span :class="$style.game">FINISH</span>
             <div
@@ -22,7 +22,6 @@
 
 <script>
     import Block from './Block'
-    import _ from 'lodash'
 
     const BOARD = [
         [{
@@ -138,6 +137,9 @@
         }
     ]
 
+    const BOARD_WIDTH = 500
+    const BOARD_HEIGHT = 500
+
     export default {
     	name: 'Board',
         data () {
@@ -153,29 +155,36 @@
     	components: {
     		Block
     	},
+        computed: {
+            boardSizes () {
+                return `width: ${BOARD_WIDTH}px; height: ${BOARD_HEIGHT}px;`
+            }
+        },
         methods: {
 
             /*
             *   isFinish: check if the game is over
             */
             isFinish () {
-                let numbers = [0,1,2,3,4,5,6,7,8]
-                let numbersLength = numbers.length
-                let counter = 0
-
-                for (let row in this.gridBoard) {
-                    let numbersRow = numbers.splice (0, this.gridBoard[row].length)
-                    for (let box in this.gridBoard[row]) {
-                        if (numbersRow[box] === this.gridBoard[row][box].index){
-                            counter ++
-                        }
-                    }
-                }
-
-                if (counter === numbersLength) {
-                    this.gameOver = true
-                }
-                return
+                // let numbers = [0,1,2,3,4,5,6,7,8]
+                // let numbersLength = numbers.length
+                // let counter = 0
+                //
+                // this.gridBoard.forEach ((row) => {
+                //     let numbersRow = numbers.splice (0, row.length)
+                //
+                //     row.forEach((box) => {
+                //         if (numbersRow[box] === box.index) {
+                //             counter ++
+                //         }
+                //     })
+                //
+                // })
+                //
+                // if (counter === numbersLength) {
+                //     this.gameOver = true
+                // }
+                // return
             },
 
             /*
@@ -363,6 +372,7 @@
             */
             mixBoard () {
                 let cards = CARDS
+
                 let currentIndex = cards.length -1
                 let randomIndex
                 let temporaryValue
@@ -386,46 +396,21 @@
                 }
 
             },
+            shuffleBoard() {
+                for (let i = CARDS.length - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [CARDS[i], CARDS[j]] = [CARDS[j], CARDS[i]];
+                }
+            },
 
             /*
             *  newGame: reset the board for a new match
             */
             newGame () {
                 this.gameOver = false
-            },
-
-            /*
-            *   initBoard: generate the board with numb column and numb row. It permits to choose the numbers of cards.
-            *   @param {Number} numb: number of columns and rows
-            */
-            initBoard (numb) {
-                let boxSize = 500 / numb
-                let heightBox = 0
-                let widthBox = 0
-                let temporaryBoard = []
-
-                _.times (numb, (n) => {
-                    _.times (numb, (n) => {
-                        temporaryBoard.push({
-                            boxPosition: {
-                                top: heightBox + 'px',
-                                left: widthBox + 'px'
-                            }
-                        })
-                        widthBox = widthBox + boxSize
-                    })
-
-                    heightBox = heightBox + boxSize
-                    widthBox = 0
-                })
-                this.gridBoard = temporaryBoard
             }
         },
         created () {
-            // initBoard doesn't work properly yet
-            // this.initBoard ()
-            //     this.mixBoard ()
-            // }
             this.mixBoard ()
         }
     }
@@ -440,11 +425,10 @@
         align-items: center;
     }
     .container {
-        width: 500px;
-        height: 500px;
         border: 1px solid #666;
         display: flex;
         position: relative;
+        box-sizing: border-box;
     }
     .overlay {
         position: absolute;
