@@ -1,9 +1,11 @@
 <template>
+
     <div
-        :style="setClasses"
+        :style="styleBlock"
         :class="$style.box">
-        <span :class="$style.indexBox">0</span>{{ dataBlock.index }}
+            <span :class="$style.indexBox">{{ index }}</span>
     </div>
+
 </template>
 
 <script>
@@ -11,27 +13,25 @@
     export default {
         name: 'Block',
         props: {
-            dataBlock: {
+            styleBlock: {
                 type: Object,
                 required: true
-            }
-        },
-        computed: {
-            setClasses () {
-                return  {...this.dataBlock.boxPosition, ...this.dataBlock.bgPosition}
+            },
+            index: {
+                type: Number,
+                default: undefined
             }
         }
     }
+
 </script>
 
 <style lan="scss" module>
 
     .box {
-        width: 166.6px;
-        height: 166.6px;
         box-sizing: border-box;
         border: 1px solid #666;
-        position: absolute;
+        box-sizing: border-box;
         background-image: url('../assets/monks.jpg');
         background-repeat: no-repeat;
         color: white;

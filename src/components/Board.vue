@@ -1,463 +1,193 @@
 <template>
-    <div :class="$style.container" :style="boardSizes">
-        <div :class="[$style.overlay, this.gameOver ? $style.active : '' ]">
-            <span :class="$style.game">FINISH</span>
-            <div
-                :class="$style.btn_reset"
-                @click.stop="newGame()">
-                    NEW GAME
+
+    <div
+        :class="$style.container"
+        :style="boardSizes">
+
+            <div :class="[$style.overlay, {[$style.overlay_active]: isFinish}]">
+
+                <span :class="$style.overlay_text">FINISH</span>
+                <div :class="$style.overlay_btn">NEW GAME</div>
+
             </div>
-        </div>
-        <template v-for="(row,indexRow) in gridBoard">
+
             <Block
-                v-for="(box,indexBox) in row"
-                v-if="!(box.index == 8 )"
-                :dataBlock="box"
-                key="indexBox"
-                @click.native="setPosition(indexBox, indexRow)">
+                v-for="(block, index) in mixedBoard"
+                :key="index"
+                :styleBlock="block"
+                :index="index"
+                :style="{ width: `${blockWidth}px`, height: `${blockWidth}px` }"
+                @click.native="handlerClick(index)">
             </Block>
-        </template>
+
     </div>
+
 </template>
 
 <script>
+
     import Block from './Block'
 
-    const BOARD = [
-        [{
-            boxPosition: {
-                top: '0px',
-                left: '0px'
-            }
-        },
-        {
-            boxPosition: {
-                top: '0px',
-                left: '166.6px'
-            }
-        },
-        {
-            boxPosition: {
-                top: '0px',
-                left: '333.2px'
-            }
-        }],
-        [{
-            boxPosition: {
-                top: '166.6px',
-                left: '0px'
-            }
-        },
-        {
-            boxPosition: {
-                top: '166.6px',
-                left: '166.6px'
-            }
-        },
-        {
-            boxPosition: {
-                top: '166.6px',
-                left: '333.2px'
-            }
-        }],
-        [{
-            boxPosition: {
-                top: '333.2px',
-                left: '0px'
-            }
-        },
-        {
-            boxPosition: {
-                top: '333.2px',
-                left: '166.6px'
-            }
-        },
-        {
-            boxPosition: {
-                top: '333.2px',
-                left: '333.2px'
-            }
-        }]
-    ]
+    const DEFAULT_EMPTY_BLOCK = 8
 
-    const CARDS = [
-        {
-            index: 0,
-            bgPosition: {
-                backgroundPosition: '0px 0px'
-            }
-        },
-        {
-            index: 1,
-            bgPosition: {
-                backgroundPosition: '-166.6px 0px'
-            }
-        },
-        {
-            index: 2,
-            bgPosition: {
-                backgroundPosition: '-333.2px 0px'
-            }
-        },
-        {
-            index: 3,
-            bgPosition: {
-                backgroundPosition: '0px -166.6px'
-            }
-        },
-        {
-            index: 4,
-            bgPosition: {
-                backgroundPosition: '-166.6px -166.6px'
-            }
-        },
-        {
-            index: 5,
-            bgPosition: {
-                backgroundPosition: '-333.2px -166.6px'
-            }
-        },
-        {
-            index: 6,
-            bgPosition: {
-                backgroundPosition: '0px -333.2px'
-            }
-        },
-        {
-            index: 7,
-            bgPosition: {
-                backgroundPosition: '-166.6px -333.2px'
-            }
-        },
-        {
-            index: 8,
-            bgPosition: {
-                backgroundPosition: '-333.2px -333.2px'
+    // keep this for future implementations for dynamic sizes
+    const BOARD_SIZE = 500
+    const BLOCK_IN_ROW = 3
+
+    const BLOCK_WIDTH = (BOARD_SIZE / BLOCK_IN_ROW)
+
+    /**
+     * create an array of objects with background-poisition of n blocks.
+     * @return {[type]} [description]
+     */
+    function initBoard () {
+        let startBoard = []
+
+        // assegna il background position dell'immagine
+        for (let row = 0; row < BLOCK_IN_ROW; row++ ) {
+            for (let block = 0; block < BLOCK_IN_ROW; block++ ) {
+                startBoard.push({
+                    backgroundPosition: `-${BLOCK_WIDTH * block}px -${BLOCK_WIDTH * row}px`
+                })
             }
         }
-    ]
 
-    const BOARD_WIDTH = 500
-    const BOARD_HEIGHT = 500
+        // assegna l'order crescente per ogni blocco
+        return startBoard.map((o, i) => ({
+            ...o,
+            opacity: (i === DEFAULT_EMPTY_BLOCK) ? 0 : 1,
+            order: i
+        }))
+    }
 
     export default {
     	name: 'Board',
         data () {
             return {
-                indexEmptyBlock: {
-                    row: 2,
-                    box: 2
-                },
-                gridBoard: BOARD,
-                gameOver: false
+                gameOver: false,
+                gridBoard: [],
+                isFinish: false
             }
         },
     	components: {
     		Block
     	},
         computed: {
-            boardSizes () {
-                return `width: ${BOARD_WIDTH}px; height: ${BOARD_HEIGHT}px;`
-            }
-        },
-        methods: {
-
-            /*
-            *   isFinish: check if the game is over
-            */
-            isFinish () {
-                // let numbers = [0,1,2,3,4,5,6,7,8]
-                // let numbersLength = numbers.length
-                // let counter = 0
-                //
-                // this.gridBoard.forEach ((row) => {
-                //     let numbersRow = numbers.splice (0, row.length)
-                //
-                //     row.forEach((box) => {
-                //         if (numbersRow[box] === box.index) {
-                //             counter ++
-                //         }
-                //     })
-                //
-                // })
-                //
-                // if (counter === numbersLength) {
-                //     this.gameOver = true
-                // }
-                // return
-            },
-
-            /*
-            *   invertPosition: switch index and background position of the empty box with clicked box
-            */
-            invertPosition (indexBox, indexRow) {
-
-                let virtualBoard = this.gridBoard
-                let emptyBox = virtualBoard[this.indexEmptyBlock.row][this.indexEmptyBlock.box]
-                let clickedBox = virtualBoard[indexRow][indexBox]
-
-                let indexSwitched = clickedBox.index
-                clickedBox.index = emptyBox.index
-                emptyBox.index = indexSwitched
-
-                let bgPositionSwitched = clickedBox.bgPosition
-                clickedBox.bgPosition = emptyBox.bgPosition
-                emptyBox.bgPosition = bgPositionSwitched
-
-                //check if the game is finished
-                this.isFinish()
-
-                // update indexEmptyBlock and gridBoard to render
-                this.indexEmptyBlock = { ...{ row: indexRow, box: indexBox } }
-                this.gridBoard = { ...virtualBoard }
-            },
-
-            /*
-            *   isUp, isDown, isRight, isLeft: check if empty box is close to clicked box
-            */
-            isUp (indexBox, indexRow) {
-                if (indexBox == this.indexEmptyBlock.box && indexRow - 1 == this.indexEmptyBlock.row) {
-                   return true
-               } else {
-                   return false
-               }
-            },
-            isDown (indexBox, indexRow) {
-                if (indexBox == this.indexEmptyBlock.box && indexRow + 1 == this.indexEmptyBlock.row) {
-                   return true
-               } else {
-                   return false
-               }
-            },
-            isLeft (indexBox, indexRow) {
-                if (indexBox - 1 == this.indexEmptyBlock.box && indexRow == this.indexEmptyBlock.row) {
-                    return true
-                } else {
-                    return false
-                }
-            },
-            isRight (indexBox, indexRow) {
-                if (indexBox + 1 == this.indexEmptyBlock.box && indexRow == this.indexEmptyBlock.row) {
-                    return true
-                } else {
-                    return false
-                }
-            },
-
-            /*
-            *   setPosition: identify the position of clicked box and checks if empty box is close to clicked box
-            *   @param indexBox and IndexRow: numbers or strings which define clicked box position
-            */
-            setPosition(indexBox, indexRow) {
-
-                if ( (typeof indexRow) == 'string' || (typeof indexBox) == 'string') {
-                    indexRow = parseFloat(indexRow)
-                    indexBox = parseFloat(indexBox)
-                }
-
-                let maxLengthRow =  this.gridBoard[indexRow].length -1
-
-                // first row
-                if (indexRow == 0 ) {
-                    if (indexBox == 0) {
-                        if (this.isDown (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isRight (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-
-                    else if (indexBox == maxLengthRow ) {
-                        if (this.isDown (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isLeft (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-
-                    else {
-                        if (this.isDown (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isLeft (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isRight (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-                }
-
-                // last row
-                else if (indexRow == maxLengthRow) {
-                    if (indexBox == 0) {
-                        if (this.isUp (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isRight (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-
-                    else if (indexBox == maxLengthRow ) {
-                        if (this.isUp (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isLeft (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-
-                    else {
-                        if (this.isUp (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isLeft (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isRight (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-                }
-
-                // others rows
-                else {
-                    if (indexBox == 0) {
-                        if (this.isUp (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isDown (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isRight (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-
-                    else if (indexBox == maxLengthRow ) {
-                        if (this.isUp (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isDown (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isLeft (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                    }
-                    else {
-
-                        if (this.isUp (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isDown (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isLeft (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-                        else if (this.isRight (indexBox, indexRow)) {
-                            this.invertPosition (indexBox, indexRow)
-                        }
-
-                    }
-                }
-            },
-
             /*
             *   mixBoard: initialized the board with random indexs and images
             */
-            mixBoard () {
-                let cards = CARDS
+            mixedBoard () {
+                let cards = [...initBoard()]
 
-                let currentIndex = cards.length -1
-                let randomIndex
-                let temporaryValue
+                let rawId = cards.length -1
 
                 // randomize indexs
-                while (0 !== currentIndex) {
-                    randomIndex = Math.floor(Math.random() * currentIndex)
-                    currentIndex -= 1
+                while (0 !== rawId) {
+                    let randId = Math.floor(Math.random() * rawId)
+                    rawId -= 1
 
-                    temporaryValue = cards[currentIndex]
-                    cards[currentIndex] = cards[randomIndex]
-                    cards[randomIndex] = temporaryValue
+                    let tempValue = cards[rawId].order
+                    cards[rawId].order = cards[randId].order
+                    cards[randId].order = tempValue
                 }
-
-                // populate the Board with random cards
-                for (let row in this.gridBoard) {
-                    let randomNumbersRow = cards.splice(0, this.gridBoard[row].length)
-                    for (let box in this.gridBoard[row]) {
-                        Object.assign(this.gridBoard[row][box], randomNumbersRow[box])
-                    }
-                }
-
+                return cards
             },
-            shuffleBoard() {
-                for (let i = CARDS.length - 1; i > 0; i--) {
-                    let j = Math.floor(Math.random() * (i + 1));
-                    [CARDS[i], CARDS[j]] = [CARDS[j], CARDS[i]];
+        },
+        methods: {
+            handlerClick (index) {
+                // coordinates clicked block
+                const clickColumn = this.gridBoard[index].order % BLOCK_IN_ROW
+                const clickRow = Math.floor(this.gridBoard[index].order / BLOCK_IN_ROW)
+
+                // coordinates empty block
+                const emptyColumn = this.gridBoard[DEFAULT_EMPTY_BLOCK].order % BLOCK_IN_ROW
+                const emptyRow = Math.floor(this.gridBoard[DEFAULT_EMPTY_BLOCK].order / BLOCK_IN_ROW)
+
+                // valid conditions to switch
+                const SAME_ROW = ((clickRow === emptyRow) && ((emptyColumn + 1 === clickColumn) || (emptyColumn -1 === clickColumn)))
+                const SAME_COLUMN = ((clickRow !== emptyRow ) && (emptyColumn === clickColumn))
+
+                if (SAME_ROW || SAME_COLUMN) {
+                    // switch blocks
+                    this.invertPosition(index)
                 }
             },
-
             /*
-            *  newGame: reset the board for a new match
+            *   invertPosition: switch index and background position of the empty box with clicked box
             */
-            newGame () {
-                this.gameOver = false
+            invertPosition (index) {
+
+                let board = [...this.gridBoard]
+                let temOrder = board[index].order
+
+                // switch orders
+                board[index].order = board[DEFAULT_EMPTY_BLOCK].order
+
+                // update empty block order
+                board[DEFAULT_EMPTY_BLOCK].order = temOrder
+
+                this.gridBoard = [...board]
+            }
+        },
+        watch: {
+            gridBoard: {
+                deep: true,
+                handler: function () {
+                    // check if the game is over
+                    this.isFinish = !(this.gridBoard.find((obj, index) => (obj.order !== index)))
+                }
             }
         },
         created () {
-            this.mixBoard ()
+
+            // keep this for future implementations for dynamic sizes
+            this.boardSizes = `width: ${BOARD_SIZE}px; height: ${BOARD_SIZE}px;`
+
+            this.blockWidth = BLOCK_WIDTH
+
+            this.gridBoard = this.mixedBoard
         }
     }
 </script>
 
 <style lan="scss" module>
 
-    .wrapper {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
     .container {
-        border: 1px solid #666;
         display: flex;
+        flex-wrap: wrap;
         position: relative;
-        box-sizing: border-box;
+        border: 1px solid #666;
+        background-color: #333;
     }
     .overlay {
+        opacity: 0;
+        display: none;
         position: absolute;
         z-index: 1;
         width: 100%;
         height: 100%;
-        background-color: black;
-        transition: opacity .5s;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        opacity: 0;
-        display: none;
+        background-color: black;
+        transition: opacity .5s;
         font-family: Arial;
     }
-    .game {
+    .overlay_active {
+        opacity: 1;
+        display: flex;
+    }
+
+    .overlay_text {
         font-size: 30px;
         color: white;
         margin-bottom: 20px;
     }
-    .btn_reset {
+    .overlay_btn {
         color: white;
         padding: 15px 30px;
         background-color: #333333;
         cursor: pointer;
-    }
-    .active {
-        opacity: 1;
-        display: flex;
     }
 
 </style>
