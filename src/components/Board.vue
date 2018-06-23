@@ -7,12 +7,12 @@
             <div :class="[$style.overlay, {[$style.overlay_active]: isFinish}]">
 
                 <span :class="$style.overlay_text">FINISH</span>
-                <div :class="$style.overlay_btn">NEW GAME</div>
+                <div :class="$style.overlay_btn" @click="mixGridBoard">NEW GAME</div>
 
             </div>
 
             <Block
-                v-for="(block, index) in mixedBoard"
+                v-for="(block, index) in gridBoard"
                 :key="index"
                 :styleBlock="block"
                 :index="index"
@@ -37,13 +37,13 @@
     const BLOCK_WIDTH = (BOARD_SIZE / BLOCK_IN_ROW)
 
     /**
-     * create an array of objects with background-poisition of n blocks.
-     * @return {[type]} [description]
+     * create an array of objects with background-poisition, order and opacity of n blocks.
+     * @return {Array}
      */
     function initBoard () {
         let startBoard = []
 
-        // assegna il background position dell'immagine
+        // assign background position
         for (let row = 0; row < BLOCK_IN_ROW; row++ ) {
             for (let block = 0; block < BLOCK_IN_ROW; block++ ) {
                 startBoard.push({
@@ -52,7 +52,7 @@
             }
         }
 
-        // assegna l'order crescente per ogni blocco
+        // assign order
         return startBoard.map((o, i) => ({
             ...o,
             opacity: (i === DEFAULT_EMPTY_BLOCK) ? 0 : 1,
@@ -72,11 +72,11 @@
     	components: {
     		Block
     	},
-        computed: {
+        methods: {
             /*
             *   mixBoard: initialized the board with random indexs and images
             */
-            mixedBoard () {
+            mixGridBoard () {
                 let cards = [...initBoard()]
 
                 let rawId = cards.length -1
@@ -90,10 +90,13 @@
                     cards[rawId].order = cards[randId].order
                     cards[randId].order = tempValue
                 }
-                return cards
+                this.gridBoard = cards
             },
-        },
-        methods: {
+            /**
+             * check conditions to switch blocks,
+             * calc x,y position of clicked and empty blocks
+             * @param  {Number} index index clicked block
+             */
             handlerClick (index) {
                 // coordinates clicked block
                 const clickColumn = this.gridBoard[index].order % BLOCK_IN_ROW
@@ -104,8 +107,10 @@
                 const emptyRow = Math.floor(this.gridBoard[DEFAULT_EMPTY_BLOCK].order / BLOCK_IN_ROW)
 
                 // valid conditions to switch
+                // same row and different columns
                 const SAME_ROW = ((clickRow === emptyRow) && ((emptyColumn + 1 === clickColumn) || (emptyColumn -1 === clickColumn)))
-                const SAME_COLUMN = ((clickRow !== emptyRow ) && (emptyColumn === clickColumn))
+                // same column different and row +- 1
+                const SAME_COLUMN = (((clickRow === emptyRow + 1 ) || (clickRow === emptyRow - 1 )) && (emptyColumn === clickColumn))
 
                 if (SAME_ROW || SAME_COLUMN) {
                     // switch blocks
@@ -139,13 +144,14 @@
             }
         },
         created () {
-
             // keep this for future implementations for dynamic sizes
             this.boardSizes = `width: ${BOARD_SIZE}px; height: ${BOARD_SIZE}px;`
 
+            // initialized const to use it in template
             this.blockWidth = BLOCK_WIDTH
 
-            this.gridBoard = this.mixedBoard
+            // initiliazed and mix grid board
+            this.mixGridBoard()
         }
     }
 </script>
@@ -157,7 +163,7 @@
         flex-wrap: wrap;
         position: relative;
         border: 1px solid #666;
-        background-color: #333;
+        background-color: lightgray;
     }
     .overlay {
         opacity: 0;

@@ -31,8 +31,7 @@
     .box {
         box-sizing: border-box;
         border: 1px solid #666;
-        box-sizing: border-box;
-        background-image: url('../assets/monks.jpg');
+        background-image: url('../assets/slide_image.jpg');
         background-repeat: no-repeat;
         color: white;
         font-family: Arial;
@@ -40,6 +39,8 @@
         font-size: 15px;
     }
     .indexBox {
+        color: white;
+        mix-blend-mode: difference;
         border-bottom: 1px solid white;
         padding: 2px;
     }

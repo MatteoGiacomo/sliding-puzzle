@@ -18,11 +18,17 @@
 <style lan="scss">
 
     body {
-        background-color: #282828;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        background-color: lightblue;
         display: flex;
         align-items: center;
+        justify-content: center;
         flex-direction: column;
-        padding-top: 100px;
+        user-select: none;
     }
 
 </style>
