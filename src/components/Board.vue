@@ -162,7 +162,7 @@
         display: flex;
         flex-wrap: wrap;
         position: relative;
-        border: 1px solid #666;
+        /*border: 1px solid #666;*/
         background-color: lightgray;
     }
     .overlay {
